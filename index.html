@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Integrating Branded Link APIs for Workflow Automation</title>
+  <meta name="description" content="Comprehensive guide to using custom branded links and dynamic QR codes for secure link tracking and conversion analytics." />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0d14;
+      --surface: #111623;
+      --border: #1e2535;
+      --accent: #3b82f6;
+      --accent2: #06b6d4;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --green: #10b981;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      line-height: 1.7;
+    }
+    a { color: var(--accent2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,13,20,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+    .nav-links { display: flex; gap: 1.5rem; font-size: 0.85rem; color: var(--muted); }
+    .nav-links a { color: var(--muted); }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* HERO */
+    .hero {
+      padding: 5rem 2rem 4rem;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .badge {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      padding: 0.2rem 0.6rem;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.08em;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1.2rem;
+      background: linear-gradient(135deg, #e2e8f0 40%, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 620px;
+      margin-bottom: 2rem;
+    }
+    .cta-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      padding: 0.65rem 1.4rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; text-decoration: none; }
+    .btn-ghost {
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.65rem 1.4rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); text-decoration: none; }
+
+    /* MAIN CONTENT */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 3rem 0;
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #f1f5f9;
+    }
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 1.8rem 0 0.6rem;
+    }
+    p { color: #94a3b8; margin-bottom: 1rem; }
+
+    /* CODE BLOCK */
+    .code-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.4rem 1.6rem;
+      margin: 1.2rem 0;
+      overflow-x: auto;
+    }
+    .code-block pre {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82rem;
+      color: #7dd3fc;
+      white-space: pre;
+    }
+    .comment { color: var(--muted); }
+    .keyword { color: #f472b6; }
+    .string { color: #86efac; }
+
+    /* FEATURE CARDS */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.4rem;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card-icon { font-size: 1.5rem; margin-bottom: 0.6rem; }
+    .card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; color: #f1f5f9; }
+    .card p { font-size: 0.85rem; margin: 0; }
+
+    /* FAQ */
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 0.8rem;
+      background: var(--surface);
+    }
+    .faq-item h4 { font-size: 0.95rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.5rem; }
+    .faq-item p { font-size: 0.88rem; margin: 0; }
+
+    /* HIGHLIGHT BOX */
+    .highlight {
+      background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(6,182,212,0.08));
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 10px;
+      padding: 1.4rem 1.6rem;
+      margin: 1.5rem 0;
+    }
+    .highlight p { color: var(--text); margin: 0; font-size: 0.95rem; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+  </style>
+
+  <!-- FAQ Schema JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Can I use a custom domain with a branded link shortener?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. LinkShortener.io supports fully custom branded domains so your shortened URLs reflect your own brand instead of a generic domain."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are dynamic QR codes editable after creation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Dynamic QR codes allow you to change the destination URL at any time without reprinting or regenerating the QR code image."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How secure are shortened links?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "LinkShortener.io uses HTTPS encryption and provides link security features including password protection and expiry dates to keep your links safe."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What analytics are available for shortened links?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Real-time analytics include total clicks, unique visitors, geographic location data, device types, browsers, and referrer sources."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">// LINK-MANAGEMENT-API-DOCS</span>
+  <div class="nav-links">
+    <a href="#integration">Integration</a>
+    <a href="#qr-codes">QR Codes</a>
+    <a href="#faq">FAQ</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <span class="badge">DEVELOPER DOCUMENTATION v2.0</span>
+  <h1>The Future of Branded Links and Dynamic QR Codes</h1>
+  <p class="hero-sub">A complete technical reference for integrating branded link APIs into your automation workflows — from setup to real-time analytics.</p>
+  <div class="cta-row">
+    <a href="https://linkshortener.io" class="btn-primary">Get Started with Custom Branded Links</a>
+    <a href="#integration" class="btn-ghost">Read the Docs</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <hr class="divider" id="integration"/>
+
+  <h2>Integrating Branded Link APIs for Workflow Automation</h2>
+  <p>Modern marketing and development teams rely on automated link generation to scale campaigns, track performance, and maintain brand consistency. This guide walks through integrating <a href="https://linkshortener.io">Custom Branded Links</a> via the LinkShortener.io API into your existing workflows.</p>
+
+  <h3>Why Use a Branded Link API?</h3>
+  <p>Generic link shorteners dilute brand trust. A branded link API lets you programmatically generate short links under your own domain — improving click-through rates and providing unified analytics across every campaign touchpoint.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <h4>High-Speed Generation</h4>
+      <p>Create thousands of branded short links in seconds via REST API calls.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <h4>Secure Link Tracking</h4>
+      <p>Every link comes with real-time analytics: clicks, locations, devices, and more.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔗</div>
+      <h4>Custom Domains</h4>
+      <p>Use your own domain so every shortened URL reinforces your brand identity.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔄</div>
+      <h4>Workflow Integration</h4>
+      <p>Connect to Zapier, Make, or custom scripts via webhooks and REST endpoints.</p>
+    </div>
+  </div>
+
+  <h3>API Quick Start</h3>
+  <p>Generate a branded short link with a single POST request:</p>
+
+  <div class="code-block">
+    <pre><span class="comment"># Create a branded short link</span>
+curl -X POST https://linkshortener.io/api/v1/links \
+  -H <span class="string">"Authorization: Bearer YOUR_API_KEY"</span> \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{
+    "long_url": "https://yourwebsite.com/campaign-page",
+    "domain": "go.yourbrand.com",
+    "alias": "summer-sale",
+    "tags": ["campaign", "email"]
+  }'</span>
+
+<span class="comment"># Response</span>
+{
+  <span class="keyword">"short_url"</span>: <span class="string">"https://go.yourbrand.com/summer-sale"</span>,
+  <span class="keyword">"clicks"</span>: 0,
+  <span class="keyword">"created_at"</span>: <span class="string">"2025-06-01T10:00:00Z"</span>
+}</pre>
+  </div>
+
+  <h3>Automating Link Creation with Zapier</h3>
+  <p>Connect LinkShortener.io to Zapier to auto-generate branded links whenever a new product, blog post, or campaign is created in your CMS or spreadsheet. No code required — just map the fields and let the automation run.</p>
+
+  <hr class="divider" id="qr-codes"/>
+
+  <h2>Dynamic QR Code Generator — Technical Overview</h2>
+  <p>A <strong>Dynamic QR Code Generator</strong> creates QR codes whose destination URL can be changed after printing. Unlike static QR codes, dynamic ones let you update the linked page without reprinting marketing materials — making them ideal for product packaging, event signage, and long-running campaigns.</p>
+
+  <h3>How Dynamic QR Codes Work</h3>
+  <p>When a user scans the QR code, they are first redirected through a short link on LinkShortener.io's infrastructure. This redirect layer is what makes the QR code "dynamic" — you update the redirect destination, and the physical QR code image never needs to change.</p>
+
+  <div class="code-block">
+    <pre><span class="comment"># Generate a dynamic QR code via API</span>
+curl -X POST https://linkshortener.io/api/v1/qr-codes \
+  -H <span class="string">"Authorization: Bearer YOUR_API_KEY"</span> \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{
+    "destination_url": "https://yourwebsite.com/product",
+    "qr_format": "PNG",
+    "size": 512,
+    "dynamic": true
+  }'</span></pre>
+  </div>
+
+  <h3>Key Benefits</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">✏️</div>
+      <h4>Editable Destination</h4>
+      <p>Change where the QR code points at any time from your dashboard.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📍</div>
+      <h4>Location Analytics</h4>
+      <p>Track scan locations by city and country for geo-targeted campaigns.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📱</div>
+      <h4>Device Tracking</h4>
+      <p>See which devices and OS versions are scanning your QR codes.</p>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <p>🔗 Ready to create your first dynamic QR code? <a href="https://linkshortener.io">Visit LinkShortener.io</a> to get started with branded links and dynamic QR codes — no technical setup required.</p>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>Use Cases for Workflow Automation</h2>
+  <p>Branded link APIs integrate into dozens of real-world workflows:</p>
+  <p><strong>Email Marketing:</strong> Auto-generate tracked branded links for each email campaign and monitor click rates by segment.</p>
+  <p><strong>Social Media Scheduling:</strong> Use the API to create unique tracked links for every social post, then analyze which platforms drive the most traffic.</p>
+  <p><strong>E-commerce:</strong> Generate dynamic QR codes for product packaging that redirect to the latest offers or support pages.</p>
+  <p><strong>Link in Bio for Instagram:</strong> Use a branded short URL as your Instagram bio link and update the destination without changing the link itself.</p>
+
+  <hr class="divider" id="faq"/>
+
+  <h2>Frequently Asked Questions</h2>
+
+  <div class="faq-item">
+    <h4>Can I use a custom domain with a branded link shortener?</h4>
+    <p>Yes. LinkShortener.io supports fully custom branded domains so your shortened URLs reflect your own brand instead of a generic third-party domain. Setup takes just a few DNS changes.</p>
+  </div>
+
+  <div class="faq-item">
+    <h4>Are dynamic QR codes editable after creation?</h4>
+    <p>Yes. Dynamic QR codes allow you to change the destination URL at any time from your dashboard, without reprinting or regenerating the QR code image.</p>
+  </div>
+
+  <div class="faq-item">
+    <h4>How secure are shortened links?</h4>
+    <p>LinkShortener.io uses HTTPS encryption on all links and offers optional password protection and expiry dates. The platform also provides secure link tracking to monitor suspicious traffic patterns.</p>
+  </div>
+
+  <div class="faq-item">
+    <h4>What analytics come with each link?</h4>
+    <p>Every link includes real-time analytics: total clicks, unique visitors, geographic location breakdown, device types, browser data, and referrer sources — all accessible via dashboard or API.</p>
+  </div>
+
+  <hr class="divider"/>
+
+  <p style="font-size:0.85rem; color: var(--muted);">
+    📖 Also see: <a href="https://custom-branded-link-strategy.pages.dev">The Definitive Guide to Branded URL Shorteners</a> — a marketing-focused companion to this technical documentation.
+  </p>
+
+</div>
+
+<footer>
+  <p>Technical documentation resource. Learn more at <a href="https://linkshortener.io">LinkShortener.io</a> — Custom Branded Links &amp; Dynamic QR Code Generator.</p>
+</footer>
+
+</body>
+</html>
